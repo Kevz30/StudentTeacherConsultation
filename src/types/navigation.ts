@@ -3,7 +3,11 @@ export type RootStackParamList = {
   Register: undefined;
   StudentHome: undefined;
   TeacherHome: undefined;
+  TeacherSchedule: undefined; // ✅ Add this
+  TeacherStack: undefined; // ✅ And this
   AdminHome: undefined;
+  ManageTeachers: undefined;
+  UploadSchedule: { teacherId?: string }; // For admin or teacher
   Pending: undefined;
-  Rejected: undefined; // 👈 Add this line
+  Rejected: undefined;
 };

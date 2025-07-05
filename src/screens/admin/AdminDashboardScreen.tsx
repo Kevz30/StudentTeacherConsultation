@@ -15,22 +15,24 @@ import {
   doc,
   updateDoc,
 } from 'firebase/firestore';
-import { db, auth } from '../../firebase'; // Firebase Firestore and Auth
-import { User } from '../../types/User';  // User type interface
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // ✅ added
+import { RootStackParamList } from '../../types/navigation'; // ✅ added
+import { db, auth } from '../../firebase';
+import { User } from '../../types/User';
 
-// Admin Dashboard Screen
-// This shows a list of pending students
-// Admin can approve or reject each student
+// ✅ Define navigation type
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function AdminDashboardScreen() {
   const [pendingStudents, setPendingStudents] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch pending students when the screen mounts
+  const navigation = useNavigation<NavigationProp>(); // ✅ typed navigation
+
   useEffect(() => {
     fetchPendingStudents();
   }, []);
 
-  // Fetch students from Firestore with status 'pending'
   const fetchPendingStudents = async () => {
     try {
       const q = query(
@@ -53,33 +55,28 @@ export default function AdminDashboardScreen() {
     }
   };
 
-  // Approve a student by updating their Firestore status
   const approveStudent = async (studentId: string) => {
     try {
       await updateDoc(doc(db, 'users', studentId), {
         status: 'approved',
       });
-      // Remove from local state
       setPendingStudents(prev => prev.filter(student => student.id !== studentId));
     } catch (error) {
       console.error('Error approving student:', error);
     }
   };
 
-  // Reject a student by updating their Firestore status
   const rejectStudent = async (studentId: string) => {
     try {
       await updateDoc(doc(db, 'users', studentId), {
         status: 'rejected',
       });
-      // Remove from local state
       setPendingStudents(prev => prev.filter(student => student.id !== studentId));
     } catch (error) {
       console.error('Error rejecting student:', error);
     }
   };
 
-  // While loading, show spinner
   if (loading) {
     return (
       <View style={styles.container}>
@@ -90,15 +87,23 @@ export default function AdminDashboardScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Logout button */}
+      {/* 🔒 Logout button */}
       <View style={styles.logoutContainer}>
         <Button title="Logout" onPress={() => auth.signOut()} color="#666" />
       </View>
 
-      {/* Title */}
+      {/* 🔵 Manage Teachers navigation */}
+      <View style={{ marginBottom: 20 }}>
+        <Button
+          title="Manage Teachers"
+          onPress={() => navigation.navigate('ManageTeachers')}
+          color="#007bff"
+        />
+      </View>
+
+      {/* 📋 Pending Student Approvals */}
       <Text style={styles.title}>Pending Student Approvals</Text>
 
-      {/* List of students or empty message */}
       {pendingStudents.length === 0 ? (
         <Text style={styles.emptyText}>No pending registrations</Text>
       ) : (
@@ -131,7 +136,6 @@ export default function AdminDashboardScreen() {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -140,10 +144,11 @@ const styles = StyleSheet.create({
   },
   logoutContainer: {
     position: 'absolute',
-    top: 10,
+    top: 20,
     right: 10,
     zIndex: 1,
-  },
+    },
+
   title: {
     fontSize: 22,
     fontWeight: 'bold',
