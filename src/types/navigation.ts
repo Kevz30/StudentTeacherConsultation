@@ -5,4 +5,5 @@ export type RootStackParamList = {
   TeacherHome: undefined;
   AdminHome: undefined;
   Pending: undefined;
+  Rejected: undefined; // 👈 Add this line
 };

@@ -7,22 +7,20 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
-
-// Import typed navigation param list
 import type { RootStackParamList } from './src/types/navigation';
 
-// Import screens
+// Screens
 import RegisterScreen from './src/screens/RegisterScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import StudentHomeScreen from './src/screens/StudentHomeScreen';
 import TeacherHomeScreen from './src/screens/TeacherHomeScreen';
-import AdminHomeScreen from './src/screens/AdminHomeScreen';
+import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
 import PendingApprovalScreen from './src/screens/PendingApprovalScreen';
+import RejectedScreen from './src/screens/RejectedScreen'; // ⬅️ NEW
 
-// Use the typed stack navigator
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Stack for unauthenticated users (login/register)
+// Unauthenticated screens
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -32,11 +30,10 @@ function AuthStack() {
   );
 }
 
-// Main navigator based on auth status
+// Handles screen selection based on auth/role/status
 function AppContent() {
-  const { user, loading, role, status } = useAuth(); // Get current user state from context
+  const { user, loading, role, status } = useAuth();
 
-  // While user data is loading
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -49,19 +46,18 @@ function AppContent() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!user ? (
-          // If no user is logged in, show Auth stack
           <Stack.Screen name="Login" component={AuthStack} />
         ) : status === 'pending' && role === 'student' ? (
-          // Student account is pending approval
           <Stack.Screen name="Pending" component={PendingApprovalScreen} />
+        ) : status === 'rejected' && role === 'student' ? (
+          <Stack.Screen name="Rejected" component={RejectedScreen} />
         ) : role === 'student' ? (
           <Stack.Screen name="StudentHome" component={StudentHomeScreen} />
         ) : role === 'teacher' ? (
           <Stack.Screen name="TeacherHome" component={TeacherHomeScreen} />
         ) : role === 'admin' ? (
-          <Stack.Screen name="AdminHome" component={AdminHomeScreen} />
+          <Stack.Screen name="AdminHome" component={AdminDashboardScreen} />
         ) : (
-          // Fallback
           <Stack.Screen name="Login" component={AuthStack} />
         )}
       </Stack.Navigator>
@@ -69,7 +65,7 @@ function AppContent() {
   );
 }
 
-// App root wrapped with AuthProvider
+// Main app entry point wrapped with auth provider
 export default function App() {
   return (
     <AuthProvider>
